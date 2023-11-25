@@ -24,7 +24,7 @@ router.post('/MartinDow/signin', async(req,res) => {
         }
     } catch (error) {
         console.error('Error in /some-route:', error);
-        res.status(500).json({ status: 'Internal server error' });
+        res.status(500).json({ status: 'Internal server error in catch block sigin' });
     }
 });
 
@@ -58,12 +58,13 @@ router.put('/MartinDow/forgotpassword', async(req,res) => {
 
     } catch (error) {
         console.error('Error in /some-route:', error);
-        res.status(500).json({ status: 'Internal server error' });
+        res.status(500).json({ status: 'Internal server error in catch block forgot password' });
     }
 });
 
 router.post('/MartinDow/signup', async(req,res) =>{
     try{
+        const con=req.db;
         const fullName=req.body.fullName;
         const email=req.body.email;
         const maritalStatus=req.body.maritalStatus;
@@ -81,7 +82,7 @@ router.post('/MartinDow/signup', async(req,res) =>{
         const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
         const role='patient';
 
-        const binds1=[fullName,email||null,maritalStatus,cnic,formattedDOB,insuranceID||null,gender,phoneNumber,emergencyContact,ecName,ecRelation,ecEmail||null,password,favouriteNovel];
+        const binds1=[fullName,cnic,phoneNumber,formattedDOB,maritalStatus,email||null,insuranceID||null,gender,favouriteNovel];
         const sql1="insert into patients (full_name,cnic,phone_number,dob,marital_status,email,insurance_id,gender,favourite_novel) values (:1,:2,:3,:4,:5,:6,:7,:8,:9)";
         const result1=await con.execute(sql1,binds1);
         console.log(result1);
@@ -101,17 +102,27 @@ router.post('/MartinDow/signup', async(req,res) =>{
                 const binds3=[userid,fullName,password,role,favouriteNovel,cnic];
                 const sql3="insert into users (user_id,full_name,password,user_role,favourite_novel,cnic) values (:1,:2,:3,:4,:5,:6)";
                 const result3=await con.execute(sql3,binds3);
+                console.log(result3);
                 if(result3.error){
                     console.error('Error inserting user patient:', result3.error);
                     res.status(500).json({ status: 'Internal server error insert user patient' });
                 }else{
-                    res.status(200).json({status:'patient and user created successfully'});
+                    const binds4=[userid,ecName,emergencyContact,ecEmail||null,ecRelation];
+                    const sql4="insert into emergency_contact (patient_id,full_name,phone_number,email,relationship) values(:1,:2,:3,:4,:5)"
+                    const result4=await con.execute(sql4,binds4);
+                    console.log(result4);
+                    if (result4.error) {
+                        console.error('Error inserting emergency contact:', result4.error);
+                        res.status(500).json({ status: 'Internal server error emergency contact' });
+                    } else {
+                        res.status(200).json({ status: 'Patient and user created successfully' });
+                    }
                 }
             }
         }
     }catch (error) {
         console.error('Error in signup', error);
-        res.status(500).json({ status: 'Internal server error signup' });
+        res.status(500).json({ status: 'Internal server error signup in catch block signup' });
     }
 });
 
