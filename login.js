@@ -11,9 +11,10 @@ router.post('/MartinDow/signin', async(req,res) => {
         const con=req.db;
         const userid=req.body.userid;
         const password=req.body.password;
-        const binds=[userid,password];
+        const role=req.body.role;
+        const binds=[userid,password,role];
 
-        const sql="select * from users where user_id=:1 and password=:2";
+        const sql="select * from users where user_id=:1 and password=:2 and user_role=:3";
         const result=await con.execute(sql,binds);
         console.log(result);
 
