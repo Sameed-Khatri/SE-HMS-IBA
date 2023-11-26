@@ -2,6 +2,11 @@ const { Router } = require('express');
 const router = Router();
 const { route } = require('express/lib/application');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const { transporter, mailOptions, sendMail } = require("./email");
+
+
 
 router.use(bodyParser.json());
 
@@ -173,61 +178,84 @@ router.delete('/deleteDoctor/:doctorID', async(req, res) => {
     }
 });
 
-//incomplete
 router.post('/addDoctor', async(req,res) =>{
     try{
         const con=req.db;
         const fullName=req.body.fullName;
         const email=req.body.email;
-        // const maritalStatus=req.body.maritalStatus;
         const cnic=req.body.cnic;
         const dob=req.body.dob;
-        // const insuranceID=req.body.insuranceID;
         const gender=req.body.gender;
         const phoneNumber=req.body.phoneNumber;
         const substituteContact=req.body.substituteContact;
-        // const ecName=req.body.emergencyContactName;
-        // const ecRelation=req.body.emergencyContactRelation;
-        // const ecEmail=req.body.emergencyContactEmail;
         const departmentID=req.body.departmentID;
         const briefDescription=req.body.briefDescription;
         const modeOfAvailibility=req.body.modeOfAvailibility;
         const password=req.body.password;
         const favouriteNovel=req.body.favouriteNovel;
+        const days=req.body.days;
+        const startTime=req.body.startTime;
+        const endTime=req.body.endTime;
+        const clinicNumber=req.body.clinicNumber;
         const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
         const role='doctor';
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const binds1=[fullName,cnic,phoneNumber,formattedDOB,email,substituteContact,gender,favouriteNovel];
-        const sql1="insert into doctors (full_name,cnic,phone_number,dob,email,substitute_contact,gender,favourite_novel) values (:1,:2,:3,:4,:5,:6,:7,:8,:9)";
+        const binds1=[fullName,cnic,phoneNumber,formattedDOB,email,substituteContact,gender,favouriteNovel,departmentID,briefDescription,modeOfAvailibility];
+        const sql1="insert into doctors (full_name,cnic,phone_number,dob,email,substitute_contact,gender,favourite_novel,department_id,brief_description,mode_of_availibility) values (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)";
         const result1=await con.execute(sql1,binds1);
         console.log(result1);
         if(result1.error){
-            console.error('Error inserting patient:', result1.error);
-            res.status(500).json({ status: 'Internal server error insert patient' });
+            console.error('Error inserting doctor:', result1.error);
+            res.status(500).json({ status: 'Internal server error insert doctor' });
         }else{
             const binds2=[fullName,cnic,phoneNumber];
-            const sql2="select patient_id from patients where full_name=:1 and cnic=:2 and phone_number=:3";
+            const sql2="select doctor_id from doctors where full_name=:1 and cnic=:2 and phone_number=:3";
             const result2=await con.execute(sql2,binds2);
             console.log(result2);
             if(result2.error){
-                console.error('Error fetching new patientID:', result2.error);
-                res.status(500).json({ status: 'Internal server error patientID fetch' });
+                console.error('Error fetching new doctorID:', result2.error);
+                res.status(500).json({ status: 'Internal server error doctorID fetch' });
             }else{
-                const userid = result2.rows[0].patient_id;
-                const binds3=[userid,fullName,password,role,favouriteNovel,cnic];
+                const row=result2.rows[0];
+                const userid = row[0];
+                const binds3=[userid,fullName,hashedPassword,role,favouriteNovel,cnic];
                 const sql3="insert into users (user_id,full_name,password,user_role,favourite_novel,cnic) values (:1,:2,:3,:4,:5,:6)";
                 const result3=await con.execute(sql3,binds3);
+                console.log(result3);
                 if(result3.error){
-                    console.error('Error inserting user patient:', result3.error);
-                    res.status(500).json({ status: 'Internal server error insert user patient' });
+                    console.error('Error inserting user doctor:', result3.error);
+                    res.status(500).json({ status: 'Internal server error insert user doctor' });
                 }else{
-                    res.status(200).json({status:'patient and user created successfully'});
+                    const binds4=[userid,startTime,endTime,days,clinicNumber];
+                    const sql4="insert into doctor_schedule (doctor_id,start_time,end_time,day,room_id) values (:1,:2,:3,:4,:5)";
+                    const result4=await con.execute(sql4,binds4);
+                    console.log(result4);
+                    if(result4.error){
+                        console.error('Error inserting doctor schedule:', result4.error);
+                        res.status(500).json({ status: 'Internal server error insert doctor schedule' });
+                    }else {
+                        const dynamicMailOptions = {
+                            ...mailOptions,
+                            to: [email],
+                            subject: `Welcome to Martin Dow`,
+                            text: `Hello ${fullName},\n\nYour account has been created successfully.\n\nYour Doctor ID is : ${userid},\n\nThank you for using our service.`,
+                        };
+                        sendMail(transporter, dynamicMailOptions);
+                        if(error) {
+                            console.error('Error sending email:', error);
+                            res.status(500).json({status:'error sending email to doctor '});
+                        }
+                        else{
+                            res.status(200).json({status:'email sent successfully, doctor registered'});
+                        }
+                    }
                 }
             }
         }
     }catch (error) {
-        console.error('Error in signup', error);
-        res.status(500).json({ status: 'Internal server error signup in catch block signup' });
+        console.error('Error in addDoctor', error);
+        res.status(500).json({ status: 'Internal server error in catch block addDoctor' });
     }
 });
 

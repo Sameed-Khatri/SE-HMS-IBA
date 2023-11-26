@@ -63,7 +63,7 @@ router.put('/MartinDow/forgotpassword', async(req,res) => {
         const cnic=req.body.cnic;
         const novel=req.body.favouriteNovel;
         const newpass=req.body.newPassword;
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(newpass, 10);
         const binds=[userid,cnic,novel];
         const sql="select user_id,cnic,favourite_novel from users where user_id=:1 and cnic=:2 and favourite_novel=:3";
         const result=await con.execute(sql,binds);
@@ -149,12 +149,12 @@ router.post('/MartinDow/signup', async(req,res) =>{
                             ...mailOptions,
                             to: [email],
                             subject: `Welcome to Martin Dow`,
-                            text: `Hello ${fullName},\n\nYour account has been created successfully.\n\nYour Patient ID is : ${use},\n\nThank you for using our service.`,
+                            text: `Hello ${fullName},\n\nYour account has been created successfully.\n\nYour Patient ID is : ${userid},\n\nThank you for using our service.`,
                         };
                         sendMail(transporter, dynamicMailOptions);
                         if(error) {
                             console.error('Error sending email:', error);
-                            res.status(500).json({status:'error sending email patient not registered'});
+                            res.status(500).json({status:'error sending email to patient'});
                         }
                         else{
                             res.status(200).json({status:'email sent successfully, pateint registered'});
