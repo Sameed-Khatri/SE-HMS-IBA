@@ -3,14 +3,16 @@ const app = express();
 const connection=require('./database');
 const userRoutes=require('./login');
 const adminRoutes=require('./admin');
+const cors = require('cors');
 // const userReportRoutes=require('./routes/user report');
 // const adminReportRoutes=require('./routes/admin');
 // const actionReportRoutes=require('./routes/actionTeam');
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', 3001);
 
 // Middlewares
 app.use(express.json());
+app.use(cors());
 
 app.use(async(req,res,next) => {
     try {

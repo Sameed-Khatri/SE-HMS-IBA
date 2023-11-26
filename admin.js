@@ -173,6 +173,7 @@ router.delete('/deleteDoctor/:doctorID', async(req, res) => {
     }
 });
 
+//incomplete
 router.post('/addDoctor', async(req,res) =>{
     try{
         const con=req.db;
