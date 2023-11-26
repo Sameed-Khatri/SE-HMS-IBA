@@ -196,7 +196,7 @@ router.post('/addDoctor', async(req,res) =>{
         const days=req.body.days;
         const startTime=req.body.startTime;
         const endTime=req.body.endTime;
-        const clinicNumber=req.body.clinicNumber;
+        // const clinicNumber=req.body.clinicNumber;
         const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
         const role='doctor';
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -227,8 +227,8 @@ router.post('/addDoctor', async(req,res) =>{
                     console.error('Error inserting user doctor:', result3.error);
                     res.status(500).json({ status: 'Internal server error insert user doctor' });
                 }else{
-                    const binds4=[userid,startTime,endTime,days,clinicNumber];
-                    const sql4="insert into doctor_schedule (doctor_id,start_time,end_time,day,room_id) values (:1,:2,:3,:4,:5)";
+                    const binds4=[userid,startTime,endTime,days];
+                    const sql4="insert into doctor_schedule (doctor_id,start_time,end_time,day) values (:1,:2,:3,:4,:5)";
                     const result4=await con.execute(sql4,binds4);
                     console.log(result4);
                     if(result4.error){
