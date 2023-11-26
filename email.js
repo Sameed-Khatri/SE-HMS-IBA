@@ -6,17 +6,17 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "sambp1647@gmail.com",
-    pass: "xzvu epjt xgre hkcv",
+    user: "",
+    pass: "",
   },
 });
 
 const mailOptions = {
     from:{
         name: "Martin Dow",
-        address: "sambp1647@gmail.com",
+        address: "xyz7@gmail.com",
     },
-    to: ["smdkhatri1@gmail.com"],
+    to: ["abc@gmail.com"],
     subject: "Hello ✔",
     text: "Hello world?",
     html: "<b>Hello world?</b>"
