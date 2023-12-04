@@ -77,63 +77,64 @@ router.delete('/deleteAppointment/:appointmentID', async(req,res)=>{
     }
 });
 
-router.get('/allAppointments',async(req,res)=>{
-    try {
-        const con=req.db;
-        const sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id)"
-        const result=await con.execute(sql);
-        console.log(result);
-        if(result.rows.length===0){
-            console.log('no appointments made');
-            res.status(200).json({status:'no appointments made'});
-        }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
-        }
-    } catch (error) {
-        console.error('Error in fetching all apointments', error);
-        res.status(500).json({ status: 'Internal server error in catch all appointments' });
-    }
-});
+// router.get('/allAppointments',async(req,res)=>{
+//     try {
+//         // const con=req.db;
+//         // const sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id)"
+//         // const result=await con.execute(sql);
+//         // console.log(result);
+//         result=[];
+//         if(result.length===0){
+//             console.log('no appointments made');
+//             res.status(200).json({status:'no appointments made'});
+//         }else{
+//             var parseResult = JSON.parse(JSON.stringify(result));
+//             console.log(parseResult.length)
+//             console.log(parseResult)  
+//             res.status(200).json(parseResult);
+//         }
+//     } catch (error) {
+//         console.error('Error in fetching all apointments', error);
+//         res.status(500).json({ status: 'Internal server error in catch all appointments' });
+//     }
+// });
 
-router.get('/searchAppointments',async(req, res) => {
-    try {
-        const con=req.db;
-        const mode=req.query.mode;
-        const status=req.query.status;
-        const type=req.query.type;
-        const binds=[];
-        let sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id) where 1=1 ";
-        if(mode){
-            binds.push(mode);
-            sql+=" and appointment_mode=:1";
-        }
-        if(status){
-            binds.push(status);
-            sql+=" and appointment_status=:2";
-        }
-        if(type){
-            binds.push(type);
-            sql+=" and appointment_type=:3";
-        }
-        const result=await con.execute(sql,binds);
-        console.log(result);
-        if(result.rows.length===0){
-            console.log('no appointments found');
-            res.status(200).json({status:'no appointments found'});
-        }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
-        }
-    } catch (error) {
-        console.error('Error in searching apointments', error);
-        res.status(500).json({ status: 'Internal server error in catch search appointments' });
-    }
-});
+// router.get('/searchAppointments',async(req, res) => {
+//     try {
+//         const con=req.db;
+//         const mode=req.query.mode;
+//         const status=req.query.status;
+//         const type=req.query.type;
+//         const binds=[];
+//         let sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id) where 1=1 ";
+//         if(mode){
+//             binds.push(mode);
+//             sql+=" and appointment_mode=:1";
+//         }
+//         if(status){
+//             binds.push(status);
+//             sql+=" and appointment_status=:2";
+//         }
+//         if(type){
+//             binds.push(type);
+//             sql+=" and appointment_type=:3";
+//         }
+//         const result=await con.execute(sql,binds);
+//         console.log(result);
+//         if(result.rows.length===0){
+//             console.log('no appointments found');
+//             res.status(200).json({status:'no appointments found'});
+//         }else{
+//             var parseResult = JSON.parse(JSON.stringify(result));
+//             console.log(parseResult.length)
+//             console.log(parseResult)  
+//             res.status(200).json(parseResult);
+//         }
+//     } catch (error) {
+//         console.error('Error in searching apointments', error);
+//         res.status(500).json({ status: 'Internal server error in catch search appointments' });
+//     }
+// });
 
 router.get('/allDoctors',async(req,res)=>{
     try {
@@ -258,5 +259,77 @@ router.post('/addDoctor', async(req,res) =>{
         res.status(500).json({ status: 'Internal server error in catch block addDoctor' });
     }
 });
+
+
+
+// Sample dummy data for appointments
+const dummyAppointments = [
+  {
+    appointment_id: 1,
+    patient_id: 123,
+    patient_name: 'John Doe',
+    doctor_id: 456,
+    doctor_name: 'Dr. Smith',
+    date_time: '2023-12-01 10:00 AM',
+    appointment_mode: 'Online',
+    appointment_status: 'Approved',
+    appointment_type: 'First',
+  },
+  {
+    appointment_id: 2,
+    patient_id: 789,
+    patient_name: 'Alice Johnson',
+    doctor_id: 101,
+    doctor_name: 'Dr. Brown',
+    date_time: '2023-12-02 02:30 PM',
+    appointment_mode: 'In Person',
+    appointment_status: 'Done',
+    appointment_type: 'FollowUp',
+  },
+];
+
+router.get('/allAppointments', async (req, res) => {
+  try {
+    if (dummyAppointments.length === 0) {
+      console.log('no appointments made');
+      res.status(200).json({ status: 'no appointments made' });
+    } else {
+      console.log(dummyAppointments.length);
+      console.log(dummyAppointments);
+      res.status(200).json(dummyAppointments);
+    }
+  } catch (error) {
+    console.error('Error in fetching all appointments', error);
+    res.status(500).json({ status: 'Internal server error in catch all appointments' });
+  }
+});
+
+router.get('/searchAppointments', async (req, res) => {
+    try {
+      const mode = req.query.mode;
+      const status = req.query.status;
+      const type = req.query.type;
+  
+      // Filter appointments based on the selected filters
+      const filteredAppointments = dummyAppointments.filter(appointment => {
+        const modeMatch = !mode || appointment.appointment_mode === mode;
+        const statusMatch = !status || appointment.appointment_status === status;
+        const typeMatch = !type || appointment.appointment_type === type;
+  
+        return modeMatch && statusMatch && typeMatch;
+      });
+  
+      if (filteredAppointments.length === 0) {
+        console.log('No appointments found');
+        res.status(200).json({ status: 'no appointments found' });
+      } else {
+        res.status(200).json(filteredAppointments);
+      }
+    } catch (error) {
+      console.error('Error in searching appointments', error);
+      res.status(500).json({ status: 'Internal server error in catch search appointments' });
+    }
+  });
+  
 
 module.exports=router;
