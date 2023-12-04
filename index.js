@@ -3,6 +3,8 @@ const app = express();
 const connection=require('./database');
 const userRoutes=require('./login');
 const adminRoutes=require('./admin');
+const patientRoutes=require('./patient');
+const doctorRoutes=require('./doctor');
 const cors = require('cors');
 
 
@@ -32,6 +34,9 @@ app.get('/MartinDow', async(req,res) =>{
 
 app.use('/user', userRoutes);
 app.use('/admin',adminRoutes);
+app.use('/patient',patientRoutes);
+app.use('/doctor',doctorRoutes);
+
 
 app.listen(app.get('port'), () => {
     const serverURL = `http://localhost:${app.get('port')}`; 
