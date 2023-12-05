@@ -11,7 +11,7 @@ router.get('/fetchUpcomingAppointments/:doctorID', async(req, res) => {
         const doctorID = req.params.doctorID;
         const appointment_status = 'Scheduled';
         const binds = [doctorID,appointment_status];
-        const sql='select appointment_id,date_time,p.full_name as patient_name,appointment_status,appointment_type,appointment_mode from appointments join patients p using(patient_id) where doctor_id=:1 and appointment_status=:2';
+        const sql='select appointment_id,appointment_date,time_slot,p.full_name as patient_name,appointment_status,appointment_type,appointment_mode from appointments join patients p using(patient_id) where doctor_id=:1 and appointment_status=:2';
         const result = await con.execute(sql, binds);
         if(result.rows.length===0) {
             console.log('no upcoming appointments');
@@ -33,7 +33,7 @@ router.get('/allAppointments/:doctorID',async(req,res)=>{
         const con=req.db;
         const doctorID=req.params.doctorID;
         const binds=[doctorID];
-        const sql="select appointment_id,p.full_name as patient_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) where doctor_id=:1";
+        const sql="select appointment_id,p.full_name as patient_name,appointment_date,time_slot,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) where doctor_id=:1";
         const result=await con.execute(sql,binds);
         console.log(result);
         if(result.rows.length===0){
@@ -59,7 +59,7 @@ router.get('/searchAppointments/:doctorID',async(req, res) => {
         const status=req.query.status;
         const type=req.query.type;
         const binds=[doctorID];
-        let sql="select appointment_id,patient_id,p.full_name as patient_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) where doctor_id=:1 and 1=1 ";
+        let sql="select appointment_id,patient_id,p.full_name as patient_name,appointment_date,time_slot,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) where doctor_id=:1 and 1=1 ";
         if(mode){
             binds.push(mode);
             sql+=" and appointment_mode=:2";

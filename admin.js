@@ -14,7 +14,7 @@ router.get('/pendingAppointments', async(req,res)=> {
     try {
         const con=req.db;
         const status='approval pending';
-        const sql="select p.full_name as patient_name,patient_id,d.full_name as doctor_name,date_time,appointment_mode,appointment_type from appointments join patients p using(patient_id) join doctors d using(doctor_id) where appointment_status=:1";
+        const sql="select p.full_name as patient_name,patient_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_type from appointments join patients p using(patient_id) join doctors d using(doctor_id) where appointment_status=:1";
         const binds=[status];
         const result=await con.execute(sql,binds);
         console.log(result);
@@ -80,7 +80,7 @@ router.delete('/deleteAppointment/:appointmentID', async(req,res)=>{
 router.get('/allAppointments',async(req,res)=>{
     try {
         const con=req.db;
-        const sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id)"
+        const sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id)"
         const result=await con.execute(sql);
         console.log(result);
         if(result.rows.length===0){
@@ -105,7 +105,7 @@ router.get('/searchAppointments',async(req, res) => {
         const status=req.query.status;
         const type=req.query.type;
         const binds=[];
-        let sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,date_time,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id) where 1=1 ";
+        let sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id) where 1=1 ";
         if(mode){
             binds.push(mode);
             sql+=" and appointment_mode=:1";
@@ -194,8 +194,7 @@ router.post('/addDoctor', async(req,res) =>{
         const password=req.body.password;
         const favouriteNovel=req.body.favouriteNovel;
         const days=req.body.days;
-        const startTime=req.body.startTime;
-        const endTime=req.body.endTime;
+        const timeSlot=req.body.timeSlot;
         // const clinicNumber=req.body.clinicNumber;
         const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
         const role='doctor';
@@ -227,8 +226,8 @@ router.post('/addDoctor', async(req,res) =>{
                     console.error('Error inserting user doctor:', result3.error);
                     res.status(500).json({ status: 'Internal server error insert user doctor' });
                 }else{
-                    const binds4=[userid,startTime,endTime,days];
-                    const sql4="insert into doctor_schedule (doctor_id,start_time,end_time,day) values (:1,:2,:3,:4,:5)";
+                    const binds4=[userid,days,timeSlot];
+                    const sql4="insert into doctor_schedule (doctor_id,day,time_slot) values (:1,:2,:3)";
                     const result4=await con.execute(sql4,binds4);
                     console.log(result4);
                     if(result4.error){
