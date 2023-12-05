@@ -13,7 +13,7 @@ router.use(bodyParser.json());
 router.get('/pendingAppointments', async(req,res)=> {
     try {
         const con=req.db;
-        const status='approval pending';
+        const status='Pending';
         const sql="select p.full_name as patient_name,patient_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_type from appointments join patients p using(patient_id) join doctors d using(doctor_id) where appointment_status=:1";
         const binds=[status];
         const result=await con.execute(sql,binds);
@@ -35,10 +35,10 @@ router.get('/pendingAppointments', async(req,res)=> {
 router.put('/approveAppointment/:appointmentID', async(req,res)=>{
     try {
         const con=req.db;
-        const status='approved';
+        // const status='Scheduled';
         const appointmentID=req.params.appointmentID;
-        const binds=[status,appointmentID];
-        const sql="update appointments set appointment_status=:1 where appointment_id=:2";
+        const binds=[appointmentID];
+        const sql="begin updateAppointmentStatus(:1); end;";
         const result=await con.execute(sql,binds);
         console.log(result);
         if (result.rowsAffected === 0) {
@@ -59,7 +59,7 @@ router.delete('/deleteAppointment/:appointmentID', async(req,res)=>{
     try {
         const con=req.db;
         const appointmentID=req.params.appointmentID;
-        const sql="delete from appointments where appointment_id=:1";
+        const sql="begin deleteAppointment(:1); end;";
         const binds=[appointmentID];
         const result=await con.execute(sql,binds);
         console.log(result);
@@ -138,7 +138,7 @@ router.get('/searchAppointments',async(req, res) => {
 router.get('/allDoctors',async(req,res)=>{
     try {
         const con=req.db;
-        const sql="select doctor_id,full_name as doctor_name,dob,phone_number,gender,department_name,mode_of_availibility,start_time,end_time,day,room_id from doctors join departments using (department_id) join doctor_schedule using (doctor_id)";
+        const sql="select doctor_id,full_name as doctor_name,dob,phone_number,gender,department_name,mode_of_availibility,time_slot,day from doctors join departments using (department_id) join doctor_schedule using (doctor_id)";
         const result=await con.execute(sql);
         console.log(result);
         if(result.rows.length===0){

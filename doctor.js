@@ -89,4 +89,26 @@ router.get('/searchAppointments/:doctorID',async(req, res) => {
     }
 });
 
+router.delete('/deleteAppointment/:appointmentID', async(req,res)=>{
+    try {
+        const con=req.db;
+        const appointmentID=req.params.appointmentID;
+        const sql="begin deleteAppointment(:1); end;";
+        const binds=[appointmentID];
+        const result=await con.execute(sql,binds);
+        console.log(result);
+        if (result.rowsAffected === 0) {
+            res.status(404).json({ status: 'No appointment found with the provided ID' });
+        } else if (result.error) {
+            console.error('Error in SQL delete appointment');
+            res.status(500).json({ status: 'Internal server error deleting appointment' });
+        } else {
+            res.status(200).json({ status: 'Appointment deleted' });
+        }
+    } catch (error) {
+        console.error('Error in deleting apointment', error);
+        res.status(500).json({ status: 'Internal server error in catch block delete appointment' });
+    }
+});
+
 module.exports=router;

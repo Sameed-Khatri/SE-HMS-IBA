@@ -31,27 +31,27 @@ router.get('/fetchUpcomingAppointments/:patientID', async(req, res) => {
     }
 });
 
-router.get('/fetchPrescriptions/:patientID', async(req, res) => {
-    try {
-        const con = req.db;
-        const patientID = req.params.patientID;
-        const binds = [patientID];
-        const sql='select prescription_id,d.full_name as doctor_name,date_of_prescription from prescriptions join doctors d using(doctor_id) where patient_id=:1 order by date_of_prescription desc';
-        const result = await con.execute(sql,binds);
-        if(result.rows.length===0) {
-            console.log('no presriptions found');
-            res.status(200).json({status:'no presriptions found'});
-        }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
-        }
-    } catch (error) {
-        console.error('Error in fetching prescriptions', error);
-        res.status(500).json({ status: 'Internal server error in catch block fetch prescription' });
-    }
-});
+// router.get('/fetchPrescriptions/:patientID', async(req, res) => {
+//     try {
+//         const con = req.db;
+//         const patientID = req.params.patientID;
+//         const binds = [patientID];
+//         const sql='select prescription_id,d.full_name as doctor_name,date_of_prescription from prescriptions join doctors d using(doctor_id) where patient_id=:1 order by date_of_prescription desc';
+//         const result = await con.execute(sql,binds);
+//         if(result.rows.length===0) {
+//             console.log('no presriptions found');
+//             res.status(200).json({status:'no presriptions found'});
+//         }else{
+//             var parseResult = JSON.parse(JSON.stringify(result));
+//             console.log(parseResult.length)
+//             console.log(parseResult)  
+//             res.status(200).json(parseResult);
+//         }
+//     } catch (error) {
+//         console.error('Error in fetching prescriptions', error);
+//         res.status(500).json({ status: 'Internal server error in catch block fetch prescription' });
+//     }
+// });
 
 
 //not adding veiw prescriptions for patient
