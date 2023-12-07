@@ -188,7 +188,8 @@ router.post('/addDoctor', async(req,res) =>{
         const gender=req.body.gender;
         const phoneNumber=req.body.phoneNumber;
         const substituteContact=req.body.substituteContact;
-        const departmentID=req.body.departmentID;
+        const departmentName=req.body.departmentName;
+        console.log(departmentName);
         const briefDescription=req.body.briefDescription;
         const modeOfAvailibility=req.body.modeOfAvailibility;
         const password=req.body.password;
@@ -196,57 +197,75 @@ router.post('/addDoctor', async(req,res) =>{
         const days=req.body.days;
         const timeSlot=req.body.timeSlot;
         // const clinicNumber=req.body.clinicNumber;
-        const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
+        // const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
         const role='doctor';
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        const binds1=[fullName,cnic,phoneNumber,formattedDOB,email,substituteContact,gender,favouriteNovel,departmentID,briefDescription,modeOfAvailibility];
-        const sql1="insert into doctors (full_name,cnic,phone_number,dob,email,substitute_contact,gender,favourite_novel,department_id,brief_description,mode_of_availibility) values (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)";
-        const result1=await con.execute(sql1,binds1);
-        console.log(result1);
-        if(result1.error){
-            console.error('Error inserting doctor:', result1.error);
+        
+        const binds=[departmentName];
+        const sql='select department_id from departments where department_name=:1';
+        const result=await con.execute(sql,binds);
+        console.log(result);
+        if(result.error){
+            console.error('Error inserting doctor:', result.error);
             res.status(500).json({ status: 'Internal server error insert doctor' });
-        }else{
-            const binds2=[fullName,cnic,phoneNumber];
-            const sql2="select doctor_id from doctors where full_name=:1 and cnic=:2 and phone_number=:3";
-            const result2=await con.execute(sql2,binds2);
-            console.log(result2);
-            if(result2.error){
-                console.error('Error fetching new doctorID:', result2.error);
-                res.status(500).json({ status: 'Internal server error doctorID fetch' });
+        }
+        else if(result.rows.length===0){
+            console.log('no department found of provided name');
+        }
+        else{
+            console.log(result);
+            console.log(departmentName);
+            const row=result.rows[0];
+            const departmentID=row[0];
+            console.log(departmentID);
+            const binds1=[fullName,cnic,phoneNumber,dob,email,substituteContact,gender,favouriteNovel,departmentID,briefDescription,modeOfAvailibility];
+            const sql1="insert into doctors (full_name,cnic,phone_number,dob,email,substitute_contact,gender,favourite_novel,department_id,brief_description,mode_of_availibility) values (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)";
+            const result1=await con.execute(sql1,binds1);
+            console.log(result1);
+            if(result1.error){
+                console.error('Error inserting doctor:', result1.error);
+                res.status(500).json({ status: 'Internal server error insert doctor' });
             }else{
-                const row=result2.rows[0];
-                const userid = row[0];
-                const binds3=[userid,fullName,hashedPassword,role,favouriteNovel,cnic];
-                const sql3="insert into users (user_id,full_name,password,user_role,favourite_novel,cnic) values (:1,:2,:3,:4,:5,:6)";
-                const result3=await con.execute(sql3,binds3);
-                console.log(result3);
-                if(result3.error){
-                    console.error('Error inserting user doctor:', result3.error);
-                    res.status(500).json({ status: 'Internal server error insert user doctor' });
+                const binds2=[fullName,cnic,phoneNumber];
+                const sql2="select doctor_id from doctors where full_name=:1 and cnic=:2 and phone_number=:3";
+                const result2=await con.execute(sql2,binds2);
+                console.log(result2);
+                if(result2.error){
+                    console.error('Error fetching new doctorID:', result2.error);
+                    res.status(500).json({ status: 'Internal server error doctorID fetch' });
                 }else{
-                    const binds4=[userid,days,timeSlot];
-                    const sql4="insert into doctor_schedule (doctor_id,day,time_slot) values (:1,:2,:3)";
-                    const result4=await con.execute(sql4,binds4);
-                    console.log(result4);
-                    if(result4.error){
-                        console.error('Error inserting doctor schedule:', result4.error);
-                        res.status(500).json({ status: 'Internal server error insert doctor schedule' });
-                    }else {
-                        const dynamicMailOptions = {
-                            ...mailOptions,
-                            to: [email],
-                            subject: `Welcome to Martin Dow`,
-                            text: `Hello ${fullName},\n\nYour account has been created successfully.\n\nYour Doctor ID is : ${userid},\n\nThank you for using our service.`,
-                        };
-                        sendMail(transporter, dynamicMailOptions);
-                        if(error) {
+                    const row=result2.rows[0];
+                    const userid = row[0];
+                    const binds3=[userid,fullName,hashedPassword,role,favouriteNovel,cnic];
+                    const sql3="insert into users (user_id,full_name,password,user_role,favourite_novel,cnic) values (:1,:2,:3,:4,:5,:6)";
+                    const result3=await con.execute(sql3,binds3);
+                    console.log(result3);
+                    if(result3.error){
+                        console.error('Error inserting user doctor:', result3.error);
+                        res.status(500).json({ status: 'Internal server error insert user doctor' });
+                    }else{
+                        const binds4=[userid,days,timeSlot];
+                        const sql4="insert into doctor_schedule (doctor_id,day,time_slot) values (:1,:2,:3)";
+                        const result4=await con.execute(sql4,binds4);
+                        console.log(result4);
+                        if(result4.error){
+                            console.error('Error inserting doctor schedule:', result4.error);
+                            res.status(500).json({ status: 'Internal server error insert doctor schedule' });
+                        }else {
+                            const dynamicMailOptions = {
+                                ...mailOptions,
+                                to: [email],
+                                subject: `Welcome to Martin Dow`,
+                                text: `Hello ${fullName},\n\nYour account has been created successfully.\n\nYour Doctor ID is : ${userid},\n\nThank you for using our service.`,
+                            };
+                            sendMail(transporter, dynamicMailOptions)
+                            .then(() => {
+                            res.status(200).json({ status: 'email sent successfully, doctor registered' });
+                            })
+                            .catch((error) => {
                             console.error('Error sending email:', error);
-                            res.status(500).json({status:'error sending email to doctor '});
-                        }
-                        else{
-                            res.status(200).json({status:'email sent successfully, doctor registered'});
+                            res.status(500).json({ status: 'error sending email to doctor' });
+                            });
                         }
                     }
                 }

@@ -6,15 +6,15 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "",
-    pass: "",
+    user: "sambp1647@gmail.com",
+    pass: "xzvu epjt xgre hkcv",
   },
 });
 
 const mailOptions = {
     from:{
         name: "Martin Dow",
-        address: "xyz7@gmail.com",
+        address: "sambp1647@gmail.com",
     },
     to: ["abc@gmail.com"],
     subject: "Hello ✔",
@@ -22,15 +22,14 @@ const mailOptions = {
     html: "<b>Hello world?</b>"
 };
 
-const sendMail=async(transporter,mailOptions)=>{
+const sendMail = async (transporter, mailOptions) => {
     try {
-        await transporter.sendMail(mailOptions);
-        console.log("Message sent: %s", info.messageId);
-
+      const info = await transporter.sendMail(mailOptions);
+      console.log("Message sent: %s", info.messageId);
     } catch (error) {
-        console.error(error)
+      console.error(error);
     }
-}
+  };
 // sendMail(transporter,mailOptions);
 
 module.exports={transporter,mailOptions,sendMail};
