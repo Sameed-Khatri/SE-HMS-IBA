@@ -215,6 +215,7 @@ router.post('/addDoctor', async(req,res) =>{
         else{
             console.log(result);
             console.log(departmentName);
+            console.log('department name found');
             const row=result.rows[0];
             const departmentID=row[0];
             console.log(departmentID);
@@ -226,6 +227,7 @@ router.post('/addDoctor', async(req,res) =>{
                 console.error('Error inserting doctor:', result1.error);
                 res.status(500).json({ status: 'Internal server error insert doctor' });
             }else{
+                console.log('inserted into doctor table');
                 const binds2=[fullName,cnic,phoneNumber];
                 const sql2="select doctor_id from doctors where full_name=:1 and cnic=:2 and phone_number=:3";
                 const result2=await con.execute(sql2,binds2);
@@ -234,6 +236,7 @@ router.post('/addDoctor', async(req,res) =>{
                     console.error('Error fetching new doctorID:', result2.error);
                     res.status(500).json({ status: 'Internal server error doctorID fetch' });
                 }else{
+                    console.log('docotrid fetched');
                     const row=result2.rows[0];
                     const userid = row[0];
                     const binds3=[userid,fullName,hashedPassword,role,favouriteNovel,cnic];
@@ -244,6 +247,7 @@ router.post('/addDoctor', async(req,res) =>{
                         console.error('Error inserting user doctor:', result3.error);
                         res.status(500).json({ status: 'Internal server error insert user doctor' });
                     }else{
+                        console.log('inserted into user table');
                         const binds4=[userid,days,timeSlot];
                         const sql4="insert into doctor_schedule (doctor_id,day,time_slot) values (:1,:2,:3)";
                         const result4=await con.execute(sql4,binds4);
@@ -252,6 +256,9 @@ router.post('/addDoctor', async(req,res) =>{
                             console.error('Error inserting doctor schedule:', result4.error);
                             res.status(500).json({ status: 'Internal server error insert doctor schedule' });
                         }else {
+                            console.log('inserted into doctor schedule table');
+                            await con.commit();
+                            console.log('commit made');
                             const dynamicMailOptions = {
                                 ...mailOptions,
                                 to: [email],
