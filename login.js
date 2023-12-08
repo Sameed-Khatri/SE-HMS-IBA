@@ -108,10 +108,10 @@ router.post('/MartinDow/signup', async(req,res) =>{
         const ecEmail=req.body.emergencyContactEmail;
         const password=req.body.password;
         const favouriteNovel=req.body.favouriteNovel;
-        const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
+        // const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
         const role='patient';
         const hashedPassword = await bcrypt.hash(password, 10);
-        const binds1=[fullName,cnic,phoneNumber,formattedDOB,maritalStatus,email||null,insuranceID||null,gender,favouriteNovel];
+        const binds1=[fullName,cnic,phoneNumber,dob,maritalStatus,email,insuranceID||null,gender,favouriteNovel];
         const sql1="insert into patients (full_name,cnic,phone_number,dob,marital_status,email,insurance_id,gender,favourite_novel) values (:1,:2,:3,:4,:5,:6,:7,:8,:9)";
         const result1=await con.execute(sql1,binds1);
         console.log(result1);
