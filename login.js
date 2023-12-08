@@ -119,6 +119,7 @@ router.post('/MartinDow/signup', async(req,res) =>{
             console.error('Error inserting patient:', result1.error);
             res.status(500).json({ status: 'Internal server error insert patient' });
         }else{
+            console.log('inserted in patient');
             const binds2=[fullName,cnic,phoneNumber];
             const sql2="select patient_id from patients where full_name=:1 and cnic=:2 and phone_number=:3";
             const result2=await con.execute(sql2,binds2);
@@ -127,6 +128,7 @@ router.post('/MartinDow/signup', async(req,res) =>{
                 console.error('Error fetching new patientID:', result2.error);
                 res.status(500).json({ status: 'Internal server error patientID fetch' });
             }else{
+                console.log('fetched patient id');
                 const row=result2.rows[0];
                 const userid = row[0];
                 const binds3=[userid,fullName,hashedPassword,role,favouriteNovel,cnic];
@@ -137,6 +139,7 @@ router.post('/MartinDow/signup', async(req,res) =>{
                     console.error('Error inserting user patient:', result3.error);
                     res.status(500).json({ status: 'Internal server error insert user patient' });
                 }else{
+                    console.log('inserted in user');
                     const binds4=[userid,ecName,emergencyContact,ecEmail||null,ecRelation];
                     const sql4="insert into emergency_contact (patient_id,full_name,phone_number,email,relationship) values(:1,:2,:3,:4,:5)"
                     const result4=await con.execute(sql4,binds4);
@@ -145,25 +148,29 @@ router.post('/MartinDow/signup', async(req,res) =>{
                         console.error('Error inserting emergency contact:', result4.error);
                         res.status(500).json({ status: 'Internal server error emergency contact' });
                     } else {
+                        console.log('inserted into ec table');
+                        await con.commit();
+                        console.log('commit made');
                         const dynamicMailOptions = {
                             ...mailOptions,
                             to: [email],
                             subject: `Welcome to Martin Dow`,
                             text: `Hello ${fullName},\n\nYour account has been created successfully.\n\nYour Patient ID is : ${userid},\n\nThank you for using our service.`,
                         };
-                        sendMail(transporter, dynamicMailOptions);
-                        if(error) {
-                            console.error('Error sending email:', error);
-                            res.status(500).json({status:'error sending email to patient'});
-                        }
-                        else{
-                            res.status(200).json({status:'email sent successfully, pateint registered'});
-                        }
+                        sendMail(transporter, dynamicMailOptions)
+                        .then(() => {
+                        res.status(200).json({ status: 'email sent successfully, patient registered' });
+                        })
+                        .catch((error) => {
+                        console.error('Error sending email:', error);
+                        res.status(500).json({ status: 'error sending email to doctor' });
+                        });
                     }
                 }
             }
         }
     }catch (error) {
+        console.log('wtf');
         console.error('Error in signup', error);
         res.status(500).json({ status: 'Internal server error signup in catch block signup' });
     }
