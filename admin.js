@@ -135,20 +135,32 @@ router.get('/searchAppointments',async(req, res) => {
     }
 });
 
-router.get('/allDoctors',async(req,res)=>{
+
+
+router.get('/allDoctors', async (req, res) => {
     try {
-        const con=req.db;
-        const sql="select doctor_id,full_name as doctor_name,dob,phone_number,gender,department_name,mode_of_availibility,time_slot,day from doctors join departments using (department_id) join doctor_schedule using (doctor_id)";
-        const result=await con.execute(sql);
-        console.log(result);
-        if(result.rows.length===0){
+        const con = req.db;
+        const sql = "select doctor_id, full_name as doctor_name, dob, phone_number, gender, department_name, mode_of_availibility, time_slot, day from doctors join departments using (department_id) join doctor_schedule using (doctor_id)";
+        const result = await con.execute(sql);
+        
+        if (result.rows.length === 0) {
             console.log('no doctors');
-            res.status(200).json({status:'no doctors'});
-        }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
+            res.status(200).json({ status: 'no doctors' });
+        } else {
+            const doctors = result.rows.map((row) => {
+                return {
+                    doctor_id: row[0],
+                    doctor_name: row[1],
+                    dob: row[2],
+                    phone_number: row[3],
+                    gender: row[4],
+                    department_name: row[5],
+                    mode_of_availibility: row[6],
+                    time_slot: row[7],
+                    day: row[8]
+                };
+            });
+            res.status(200).json(doctors);
         }
     } catch (error) {
         console.error('Error in fetching all doctors', error);
@@ -156,11 +168,13 @@ router.get('/allDoctors',async(req,res)=>{
     }
 });
 
+
 router.delete('/deleteDoctor/:doctorID', async(req, res) => {
     try {
         const con=req.db;
         const doctorID=req.params.doctorID;
         const sql="delete from doctors where doctor_id=:1";
+
         const binds=[doctorID];
         const result=await con.execute(sql,binds);
         console.log(result);
@@ -170,6 +184,7 @@ router.delete('/deleteDoctor/:doctorID', async(req, res) => {
             console.error('Error in SQL delete doctor');
             res.status(500).json({ status: 'Internal server error deleting doctor' });
         } else {
+            await con.commit();
             res.status(200).json({ status: 'Doctor deleted' });
         }
     } catch (error) {
