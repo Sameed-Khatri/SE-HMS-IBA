@@ -71,19 +71,25 @@ router.get('/searchDoctors',async(req,res)=>{
         const date=req.query.date;
         const abbreviatedDays=mapDayToDBFormat(date);
         const appointmentMode=req.query.appointmentMode;
-        const timeSlot=req.query.time;
-        const binds=[departmentName,appointmentMode,abbreviatedDays,timeSlot];
-        const sql='select d.full_name as doctor_name from doctor_schedule join doctors d using (doctor_id) join departments using (department_id) where upper(department_name)=upper(:1) and upper(mode_of_availability)=upper(:2) and day=:3 and time_slot=:4';
+        console.log(abbreviatedDays);
+        console.log(departmentName);
+        console.log(appointmentMode);
+        // const timeSlot=req.query.time;
+        const binds=[departmentName,appointmentMode,abbreviatedDays];
+        const sql='select d.full_name as name,time_slot from doctor_schedule join doctors d using (doctor_id) join departments using (department_id) where upper(department_name)=upper(:1) and upper(mode_of_availability)=upper(:2) and day=:3';
         const result=await con.execute(sql,binds);
         console.log(result);
         if (result.error) {
             console.error('Error searching doctors ', result.error);
             res.status(500).json({ status: 'Internal server error in catch block seach doctors' });
         } else {
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
+            const searchDoctors = result.rows.map((row) => {
+                return {
+                    name: row[0],
+                    timeSlots: row[1]
+                };
+            });
+            res.status(200).json(searchDoctors);
         }
     } catch (error) {
         console.error('Error in searching doctors', error);
@@ -100,18 +106,28 @@ router.post('/bookAppointment/:patientID', async (req, res)=>{
         const appointmentMode = req.body.appointmentMode;
         const appointmentType = req.body.appointmentType;
         const doctorName = req.body.doctorName;
-        const timeSlot = req.body.time;
+        const timeSlot = req.body.timeSlot;
+        const medicalHistory=req.body.medicalHistory;
         const formattedDOB = `TO_DATE('${date}', 'YYYY-MM-DD')`;
-
+        console.log(date);
+        console.log(pateintID);
+        console.log(departmentName);
+        console.log(appointmentMode);
+        console.log(appointmentType);
+        console.log(doctorName);
+        console.log(timeSlot);
         const binds1 = [doctorName];
-        const sql1="select doctor_id from doctors where doctor_id=:1"
+        const sql1="select doctor_id from doctors where full_name=:1"
         const result1=await con.execute(sql1,binds1);
+        console.log(result1);
         if(result1.error){
             console.error('Error fetching doctor id ', result1.error);
             res.status(500).json({ status: 'Internal server error in fetching doctor id' });
         }else{
-            const rows=result1[0];
-            const doctorID=rows[0];
+            const row1=result1.rows[0];
+            console.log(row1);
+            const doctorID=row1[0];
+            console.log(doctorID);
             const binds2=[departmentName];
             const sql2="select department_id from departments where department_name=:1";
             const result2=await con.execute(sql2,binds2);
@@ -119,15 +135,17 @@ router.post('/bookAppointment/:patientID', async (req, res)=>{
                 console.error('Error fetching depatment id ', result2.error);
                 res.status(500).json({ status: 'Internal server error in fetching department id' });
             }else{
-                const rows2=result2[0];
+                const rows2=result2.rows[0];
                 const departmentID=rows2[0];
-                const binds3=[doctorID,pateintID,departmentID,formattedDOB,appointmentMode,appointmentType,timeSlot];
-                const sql3="insert into appointments (doctor_id,patient_id,department_id,appointment_date,appointment_mode,appointment_type,time_slot) values (:1,:2,:3,:4,:5,:6,:7)"
+                console.log(departmentID);
+                const binds3=[doctorID,pateintID,departmentID,date,appointmentMode,appointmentType,timeSlot,medicalHistory];
+                const sql3="insert into appointments (doctor_id,patient_id,department_id,appointment_date,appointment_mode,appointment_type,time_slot,short_medical_history) values (:1,:2,:3,:4,:5,:6,:7,:8)"
                 const result3=await con.execute(sql3,binds3);
                 if(result3.error){
                     console.error('Error in booking appointment ', result3.error);
                     res.status(500).json({ status: 'Internal server error in booking appointment' });
                 }else{
+                    await con.commit();
                     res.status(200).json({status:'appointment booked successfully'});
                 }
             }

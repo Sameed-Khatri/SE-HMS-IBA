@@ -1,8 +1,8 @@
 const dayMappings = {
     'Mon': 'Mon/Wed',
-    'Tue': 'Tue/Thu',
+    'Tue': 'Tue/Thurs',
     'Wed': 'Mon/Wed',
-    'Thu': 'Tue/Thu',
+    'Thu': 'Tue/Thurs',
     'Fri': 'Fri/Sat',
     'Sat': 'Sri/Sat',
     'Sun': 'Sun', // Add mappings for Sunday if needed

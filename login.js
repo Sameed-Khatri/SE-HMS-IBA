@@ -21,7 +21,7 @@ router.post('/MartinDow/signin', async (req, res) => {
         console.log(userid, plainPassword, role);
 
         const binds = [userid, role];
-        const sql = "SELECT * FROM users WHERE upper(user_id)=upper(:1) AND upper(user_role)=upper(:2)";
+        const sql = "SELECT user_id,password FROM users WHERE upper(user_id)=upper(:1) AND upper(user_role)=upper(:2)";
         const result = await con.execute(sql, binds);
 
         console.log("results:", result);
@@ -32,7 +32,7 @@ router.post('/MartinDow/signin', async (req, res) => {
         } else {
             // Retrieve the stored hashed password from the result object
             const row = result.rows[0];
-            const storedHashedPassword = row[2]; // Check both cases
+            const storedHashedPassword = row[1]; // Check both cases
 
             console.log(storedHashedPassword);
 
@@ -40,10 +40,12 @@ router.post('/MartinDow/signin', async (req, res) => {
             const passwordMatch = await bcrypt.compare(plainPassword, storedHashedPassword);
 
             if (passwordMatch) {
-                var parseResult = JSON.parse(JSON.stringify(result.rows));
-                console.log(parseResult.length);
-                console.log(parseResult);
-                res.status(200).json(parseResult);
+                const login = result.rows.map((row) => {
+                    return {
+                        user_id: row[0]
+                    };
+                });
+                res.status(200).json(login);
             } else {
                 res.status(401).json({ status: 'incorrect password' });
             }
@@ -81,6 +83,7 @@ router.put('/MartinDow/forgotpassword', async(req,res) => {
                 res.status(500).json({ status: 'Internal server error' });
             } else {
                 // If the update was successful, return a success message
+                await con.commit();
                 res.status(200).json({ status: 'Password updated successfully' });
             }
         }
@@ -108,7 +111,7 @@ router.post('/MartinDow/signup', async(req,res) =>{
         const ecEmail=req.body.emergencyContactEmail;
         const password=req.body.password;
         const favouriteNovel=req.body.favouriteNovel;
-        // const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
+        //const formattedDOB = `TO_DATE('${dob}', 'YYYY-MM-DD')`;
         const role='patient';
         const hashedPassword = await bcrypt.hash(password, 10);
         const binds1=[fullName,cnic,phoneNumber,dob,maritalStatus,email,insuranceID||null,gender,favouriteNovel];

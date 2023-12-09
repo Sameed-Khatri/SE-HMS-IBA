@@ -57,6 +57,7 @@ router.put('/approveAppointment/:appointmentID', async(req,res)=>{
             console.error('Error in SQL update appointment status');
             res.status(500).json({ status: 'Internal server error updating appointment status' });
         } else {
+            await con.commit();
             res.status(200).json({ status: 'Appointment approved' });
         }
     } catch (error) {
@@ -79,6 +80,7 @@ router.delete('/deleteAppointment/:appointmentID', async(req,res)=>{
             console.error('Error in SQL delete appointment');
             res.status(500).json({ status: 'Internal server error deleting appointment' });
         } else {
+            await con.commit();
             res.status(200).json({ status: 'Appointment deleted' });
         }
     } catch (error) {
@@ -128,22 +130,28 @@ router.get('/searchAppointments',async(req, res) => {
         const binds=[];
         let sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_status,appointment_type from appointments join patients p using (patient_id) join doctors d using (doctor_id) where 1=1 ";
         if(mode){
+            console.log(mode);
             binds.push(mode);
             sql+=" and appointment_mode=:1";
         }
         if(status){
+            console.log(status);
             binds.push(status);
             sql+=" and appointment_status=:2";
         }
         if(type){
+            console.log(type);
             binds.push(type);
             sql+=" and appointment_type=:3";
         }
+        console.log(sql);
         const result=await con.execute(sql,binds);
-        console.log(result);
+        console.log(result.rows);
         if(result.rows.length===0){
+            const temp=result.rows[0];
+            console.log(temp);
             console.log('no appointments found');
-            res.status(200).json({status:'no appointments found'});
+            res.status(200).json({temp, status:"no appointment found"});
         }else{
             const searchAppointments = result.rows.map((row) => {
                 return {
