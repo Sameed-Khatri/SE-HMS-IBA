@@ -14,17 +14,27 @@ router.get('/pendingAppointments', async(req,res)=> {
     try {
         const con=req.db;
         const status='Pending';
-        const sql="select p.full_name as patient_name,patient_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_type from appointments join patients p using(patient_id) join doctors d using(doctor_id) where appointment_status=:1";
+        const sql="select appointment_id,patient_id,p.full_name as patient_name,doctor_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_type from appointments join patients p using(patient_id) join doctors d using(doctor_id) where appointment_status=:1";
         const binds=[status];
         const result=await con.execute(sql,binds);
         console.log(result);
         if(result.rows.length===0){
             res.status(200).json({ status: 'no appointments to approve' });
         }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
+            const pendingAppointments = result.rows.map((row) => {
+                return {
+                    appointment_id: row[0],
+                    patient_id: row[1],
+                    patient_name: row[2],
+                    doctor_id: row[3],
+                    doctor_name: row[4],
+                    appointment_date: row[5],
+                    time_slot: row[6],
+                    appointment_mode: row[7],
+                    appointment_type: row[8]
+                };
+            });
+            res.status(200).json(pendingAppointments);
         }
     } catch (error) {
         console.error('Error in pending apointments', error);
@@ -87,10 +97,21 @@ router.get('/allAppointments',async(req,res)=>{
             console.log('no appointments made');
             res.status(200).json({status:'no appointments made'});
         }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
+            const allAppointments = result.rows.map((row) => {
+                return {
+                    appointment_id: row[0],
+                    patient_id: row[1],
+                    patient_name: row[2],
+                    doctor_id: row[3],
+                    doctor_name: row[4],
+                    appointment_date: row[5],
+                    time_slot: row[6],
+                    appointment_mode: row[7],
+                    appointment_status: row[8],
+                    appointment_type: row[9]
+                };
+            });
+            res.status(200).json(allAppointments);
         }
     } catch (error) {
         console.error('Error in fetching all apointments', error);
@@ -124,10 +145,21 @@ router.get('/searchAppointments',async(req, res) => {
             console.log('no appointments found');
             res.status(200).json({status:'no appointments found'});
         }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
+            const searchAppointments = result.rows.map((row) => {
+                return {
+                    appointment_id: row[0],
+                    patient_id: row[1],
+                    patient_name: row[2],
+                    doctor_id: row[3],
+                    doctor_name: row[4],
+                    appointment_date: row[5],
+                    time_slot: row[6],
+                    appointment_mode: row[7],
+                    appointment_status: row[8],
+                    appointment_type: row[9]
+                };
+            });
+            res.status(200).json(searchAppointments);
         }
     } catch (error) {
         console.error('Error in searching apointments', error);

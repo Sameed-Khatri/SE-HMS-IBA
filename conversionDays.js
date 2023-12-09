@@ -1,11 +1,11 @@
 const dayMappings = {
-    'Mon': 'mon/wed',
-    'Tue': 'tue/thu',
-    'Wed': 'mon/wed',
-    'Thu': 'tue/thu',
-    'Fri': 'fri/sat',
-    'Sat': 'fri/sat',
-    'Sun': 'sun', // Add mappings for Sunday if needed
+    'Mon': 'Mon/Wed',
+    'Tue': 'Tue/Thu',
+    'Wed': 'Mon/Wed',
+    'Thu': 'Tue/Thu',
+    'Fri': 'Fri/Sat',
+    'Sat': 'Sri/Sat',
+    'Sun': 'Sun', // Add mappings for Sunday if needed
   };
   
   function mapDayToDBFormat(dateQueryParam) {

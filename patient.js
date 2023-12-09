@@ -14,16 +14,23 @@ router.get('/fetchUpcomingAppointments/:patientID', async(req, res) => {
         console.log(patientID);
         const appointment_status = 'Scheduled';
         const binds = [patientID,appointment_status];
-        const sql='select appointment_id,appointment_date,time_slot,d.full_name as doctor_name,appointment_status from appointments join doctors d using(doctor_id) where patient_id=:1 and appointment_status=:2';
+        const sql='select appointment_id,d.full_name as doctor_name,appointment_date,time_slot,appointment_mode,appointment_status from appointments join doctors d using(doctor_id) where patient_id=:1 and appointment_status=:2';
         const result = await con.execute(sql, binds);
         if(result.rows.length===0) {
             console.log('no upcoming appointments');
             res.status(200).json({status:'no upcoming appointments'});
         }else{
-            var parseResult = JSON.parse(JSON.stringify(result));
-            console.log(parseResult.length)
-            console.log(parseResult)  
-            res.status(200).json(parseResult);
+            const upcomingAppointmentsPatient = result.rows.map((row) => {
+                return {
+                    appointment_id: row[0],
+                    doctor_name: row[1],
+                    appointment_date: row[2],
+                    time_slot: row[3],
+                    appointment_mode: row[4],
+                    appointment_status: row[5]
+                };
+            });
+            res.status(200).json(upcomingAppointmentsPatient);
         }
     } catch (error) {
         console.error('Error in fetching upcoming appointmnets patient', error);
