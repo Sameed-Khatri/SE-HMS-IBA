@@ -180,7 +180,7 @@ router.get('/searchAppointments',async(req, res) => {
 router.get('/allDoctors', async (req, res) => {
     try {
         const con = req.db;
-        const sql = "select doctor_id, full_name as doctor_name, dob, phone_number, gender, department_name, mode_of_availibility, time_slot, day from doctors join departments using (department_id) join doctor_schedule using (doctor_id)";
+        const sql = "select doctor_id, full_name as doctor_name, dob, phone_number, gender, department_name, mode_of_availability, time_slot, day from doctors join departments using (department_id) join doctor_schedule using (doctor_id)";
         const result = await con.execute(sql);
         
         if (result.rows.length === 0) {
@@ -195,7 +195,7 @@ router.get('/allDoctors', async (req, res) => {
                     phone_number: row[3],
                     gender: row[4],
                     department_name: row[5],
-                    mode_of_availibility: row[6],
+                    mode_of_availability: row[6],
                     time_slot: row[7],
                     day: row[8]
                 };
@@ -275,7 +275,7 @@ router.post('/addDoctor', async(req,res) =>{
             const departmentID=row[0];
             console.log(departmentID);
             const binds1=[fullName,cnic,phoneNumber,dob,email,substituteContact,gender,favouriteNovel,departmentID,briefDescription,modeOfAvailibility];
-            const sql1="insert into doctors (full_name,cnic,phone_number,dob,email,substitute_contact,gender,favourite_novel,department_id,brief_description,mode_of_availibility) values (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)";
+            const sql1="insert into doctors (full_name,cnic,phone_number,dob,email,substitute_contact,gender,favourite_novel,department_id,brief_description,mode_of_availability) values (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)";
             const result1=await con.execute(sql1,binds1);
             console.log(result1);
             if(result1.error){
