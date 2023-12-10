@@ -19,7 +19,7 @@ const mailOptions = {
     to: ["abc@gmail.com"],
     subject: "Hello ✔",
     text: "Hello world?",
-    html: "<b>Hello world?</b>"
+    // html: "<b>Hello world?</b>"
 };
 
 const sendMail = async (transporter, mailOptions) => {

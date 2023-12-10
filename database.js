@@ -1,8 +1,8 @@
 const oracle=require('oracledb');
 
 const configuration={
-    user:'c##projectData',
-    password:'12345',
+    user:'system',
+    password:'root',
     connectString:'localhost/orcl'
 };
 
